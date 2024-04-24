@@ -35,22 +35,59 @@ export const ContentContainer = styled.div`
 
 export const MyScheduleContainer = styled.div`
     width: 100%;
+    min-height: 300px;
 
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
+
+    gap: 1rem;
+
+    div{
+        padding: 1rem;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        gap: 0.5rem;
+    }
+`
+
+export const WarningContainer = styled.div`
+    max-width: 500px;
+
+    background: rgba(255,204,0, 0.8);
+
+    display: flex;
+    align-items: center;
     justify-content: center;
+
+    text-align: center;
+
+    gap: 1rem;
+
+    padding: 1rem;
+
+    border-radius: 0.5rem;
 `
 
 export const NewScheduleContainer = styled.div`
     width: 100%;
+    min-height: 300px;
 
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+
+    padding: 1rem;
 
     div{
+        width: 100%;
+
         form{
             display: flex;
             flex-direction: column;
@@ -97,7 +134,40 @@ export const NewScheduleContainer = styled.div`
 
                     border-radius: 50%;
                 }
+                
+                :hover{
+                    transition: 0.4s;
+
+                    opacity: 0.8;
+                    scale: 1.1;
+                }
             }
         }
+    }
+`
+
+export const ScheduleCards = styled.button`
+    width: 500px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    background: var(--blue-600);
+    color: var(--white);
+
+    padding: 0.5rem 1rem;
+
+    border-radius: 0.25rem;
+    border: none;
+
+    span{
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+
+        gap: 0.5rem;
     }
 `
