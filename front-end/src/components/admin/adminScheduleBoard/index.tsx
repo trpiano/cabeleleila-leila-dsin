@@ -2,34 +2,38 @@ import { useEffect, useState } from "react";
 
 // Libs
 import { FaEdit } from "react-icons/fa";
-import { MdPerson, MdOutlineEmail } from "react-icons/md";
+import { CiCircleInfo } from "react-icons/ci";
 import { toast } from "react-toastify";
+import { parse } from "date-fns";
 
-//Internal Modals
+//Internal Components
+import { Filter } from "../../filter";
 import ModalAdminEditSchedule from "../modal/modalAdminEditSchedule";
+import { NotFoundSchedulesContainer } from "../../client/scheduleBoard/styles";
 
 //API Endpoints
 import { getSchedules } from "../../../pages/api/schedule-api";
 
 //Constants Values
-import { dataProps } from "../../../constants/types";
+import { ValueType, dataProps } from "../../../constants/types";
+import { DateFormatter, statusMessage } from "../../../constants/objects";
 
 //Custom Styles
 import { CardsCel, Container, ContentContainer, ServicesCard, StatusCel } from "./styles";
-import { DateFormatter, defaultFormatter, statusMessage } from "../../../constants/objects";
-import { parse } from "date-fns";
-import { NotFoundSchedulesContainer } from "../../client/scheduleBoard/styles";
-import { CiCircleInfo } from "react-icons/ci";
+
 
 
 export default function AdminScheduleBoard() {
     const [schedules, setSchedules] = useState([]);
     const [adminEditScheduleModalIsOpen, setAdminEditScheduleModalIsOpen] = useState(false);
 
+    const [showOldestData, setShowOldestData] = useState<boolean>(false);
+    const [rangeDate, setRangeDate] = useState<ValueType>();
+
     const [dataToEdit, setDataToEdit] = useState<dataProps>()
 
     const orderedData =
-    Array.isArray(schedules) && schedules.length > 0 && 
+        Array.isArray(schedules) && schedules.length > 0 &&
         schedules.sort((a, b) => {
             const dateA = parse(a.date, 'yyyy-MM-dd', new Date()).valueOf();
             const dateB = parse(b.date, 'yyyy-MM-dd', new Date()).valueOf();
@@ -38,7 +42,7 @@ export default function AdminScheduleBoard() {
 
 
     async function fetchSchedules() {
-        await getSchedules()
+        await getSchedules(showOldestData, rangeDate)
             .then(response => {
                 setSchedules(response)
             })
@@ -57,7 +61,7 @@ export default function AdminScheduleBoard() {
 
     useEffect(() => {
         fetchSchedules()
-    }, [])
+    }, [showOldestData, rangeDate])
 
     function toggleEditScheduleModal() {
         setAdminEditScheduleModalIsOpen(!adminEditScheduleModalIsOpen)
@@ -74,6 +78,13 @@ export default function AdminScheduleBoard() {
             <h3>Agendamentos</h3>
 
             <ContentContainer>
+                <Filter
+                    rangeDate={rangeDate}
+                    setRangeDate={setRangeDate}
+                    showOldestData={showOldestData}
+                    setShowOldestData={setShowOldestData}
+                />
+
                 {Array.isArray(orderedData) && orderedData.length > 0 ?
                     <table>
                         <thead>

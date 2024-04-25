@@ -10,6 +10,7 @@ import { Header } from '../components/header'
 //Custom Styles
 import { GlobalStyle } from "../styles/global";
 import 'react-toastify/dist/ReactToastify.css';
+import 'rsuite/DateRangePicker/styles/index.css';
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   return (

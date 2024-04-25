@@ -21,21 +21,53 @@ app.use(cors())
 
 // * [GET] Fetch All Schedules & Filtered Schedules
 app.get('/schedules', async (req, res) => {
+    let filteredSchedules = []
+    let filteredSchedulesByOldestData = []
+    let schedules = []
+
     const email = req.query.email;
+    const showOldestData = req.query.showOldestData === 'true'
+    const startDate = typeof req.query.startFilterDate === 'string' ? new Date(req.query.startFilterDate) : null;
+    const endDate = typeof req.query.endFilterDate === 'string' ? new Date(req.query.endFilterDate) : null;
     const currentDate = new Date();
 
-    const filteredByEmail = email && scheduleData.schedules.filter(object => {
-        const scheduleDate = new Date(object.date);
-        return object.email === email && scheduleDate >= currentDate;
-    });
-
-    const schedules = filteredByEmail || scheduleData.schedules;
-    const filteredSchedules = schedules.filter(schedule => new Date(schedule.date) >= currentDate);
-  
-    if (filteredSchedules.length > 0) {
-      res.status(200).json(filteredSchedules);
+    if(email){
+        schedules = scheduleData.schedules.filter(object => {
+            return object.email === email;
+        });
     } else {
-      res.status(404).json({ message: 'No schedules found!' });
+        schedules = scheduleData.schedules;
+    }
+
+    if (showOldestData) {
+        filteredSchedulesByOldestData = schedules.filter(schedule => {
+            const scheduleDate = new Date(schedule.date);
+
+            if (startDate && endDate) {
+                return scheduleDate >= startDate && scheduleDate <= endDate;
+            } else {
+                return scheduleDate
+            }
+        });
+    } else {
+        filteredSchedulesByOldestData = schedules.filter(schedule => {
+            const scheduleDate = new Date(schedule.date);
+
+            if (startDate && endDate) {
+
+                return scheduleDate >= currentDate && scheduleDate >= startDate && scheduleDate <= endDate
+            } else {
+                return scheduleDate >= currentDate
+            }
+        });
+    }
+
+    filteredSchedules = [...filteredSchedulesByOldestData];
+
+    if (filteredSchedules.length > 0) {
+        res.status(200).json(filteredSchedules);
+    } else {
+        res.status(404).json({ message: 'No schedules found!' });
     }
 })
 
@@ -55,9 +87,9 @@ app.post('/schedules', async (req, res) => {
     scheduleField.status = {
         value: "RECEIVED",
         label: "Recebido"
-      },
+    },
 
-    scheduleData.schedules.push(scheduleField)
+        scheduleData.schedules.push(scheduleField)
     fs.writeFileSync(path.join(__dirname, 'schedules.json'), JSON.stringify(scheduleData, null, 2));
     res.status(200).json({ message: 'Schedule added successfully!', schedule: scheduleField });
 })
@@ -66,8 +98,6 @@ app.post('/schedules', async (req, res) => {
 app.put('/schedules/:id', async (req, res) => {
     const id = req.params.id;
     const updatedScheduleField = req.body;
-
-    console.log(updatedScheduleField)
 
     const enterpriseIndex = scheduleData.schedules.findIndex(schedule => schedule.id === id);
 
@@ -93,35 +123,6 @@ app.get('/admin', async (req, res) => {
     }
 })
 
-// //Add a admin to access list
-// app.post('/admin', async (req, res) => {
-//     const adminField = req.body;
-
-//     const adminFieldData = {
-//         name: adminField.name,
-//         email: adminField.email,
-//     }
-
-//     adminsData.admins.push(adminFieldData)
-//     fs.writeFileSync(path.join(__dirname, 'admin.json'), JSON.stringify(adminsData, null, 2));
-//     res.status(200).json({ message: 'Admin added successfully!', admin: adminFieldData });
-// })
-
-// //Delete a existent admin
-// app.delete('/admin', async (req, res) => {
-//     const { email } = req.body;
-
-//     const adminIndex = adminsData.admins.findIndex(admin => admin.email === email);
-
-//     if (adminIndex !== -1) {
-//         adminsData.admins.splice(adminIndex, 1);
-//         fs.writeFileSync(path.join(__dirname, 'admin.json'), JSON.stringify(adminsData, null, 2));
-//         res.status(200).json({ message: 'Admin deleted successfully' });
-//       } else {
-//         res.status(404).json({ message: 'Admin not found' });
-//       }
-// })
-
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
-  });
+});

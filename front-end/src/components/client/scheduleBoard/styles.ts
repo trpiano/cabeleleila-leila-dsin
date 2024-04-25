@@ -16,8 +16,8 @@ export const ContentContainer = styled.div`
     padding: 1.5rem 0.75rem;
 
     display: flex;
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     justify-content: center;
 
     gap: 2rem;
@@ -33,6 +33,19 @@ export const ContentContainer = styled.div`
         color: var(--white);
         font-size: 1.5rem;
     }
+
+    @media screen and (max-width: 920px) {
+        flex-direction: column;
+    }
+`
+
+export const SchedulesContainer = styled.div`
+    width: 100%;
+
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex;
 
     @media screen and (max-width: 920px) {
         flex-direction: column;
@@ -178,9 +191,14 @@ export const FormContainer = styled.div`
     }
 `
 
-export const ScheduleCards = styled.button`
+type ScheduleCardProps = {
+    isDisabled: boolean
+}
+
+export const ScheduleCards = styled.button<ScheduleCardProps>`
     width: 100%;
     min-width: 500px;
+    min-height: 50px;
 
     display: flex;
     flex-direction: row;
@@ -188,6 +206,8 @@ export const ScheduleCards = styled.button`
     justify-content: space-between;
 
     background: var(--blue-600);
+    opacity: ${(props) => props.isDisabled ? '0.6' : '1'};
+    cursor: ${(props) => props.isDisabled ? 'not-allowed' : 'pointer'};
     color: var(--white);
 
     padding: 0.5rem 1rem;
@@ -202,6 +222,32 @@ export const ScheduleCards = styled.button`
         justify-content: center;
 
         gap: 0.5rem;
+    }
+
+    button{ 
+        z-index: 2;
+
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+
+        gap: 0.5rem;
+
+        background: var(--blue-300);
+        color: var(--white);
+
+        border: none;
+        border-radius: 0.5rem;
+
+        padding: 0.25rem 0.5rem;
+    }
+
+    button:hover{
+        transition: 0.4s;
+
+        opacity: 0.8;
+        scale: 1.1;
     }
 
     @media screen and (max-width: 920px) {

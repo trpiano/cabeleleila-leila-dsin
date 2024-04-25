@@ -4,40 +4,47 @@ import { useSession } from "next-auth/react";
 // Libs
 import { toast } from "react-toastify";
 import makeAnimated from "react-select/animated";
-import { addDays, endOfWeek, getWeek, isBefore, parse, startOfWeek } from 'date-fns';
-import { CiWarning, CiCircleInfo } from "react-icons/ci";
+import { addDays, isBefore, parse } from 'date-fns';
+import { CiWarning, CiCircleInfo, CiRead } from "react-icons/ci";
 
-//Internal Modals
+//Internal Components
 import { ModalSameWeek } from "../modal/modalSameWeek";
 import { ModalEditSchedule } from "../modal/modalEditSchedule";
+import { ModalViewDetails } from "../../modals/modalViewDetails";
+import { Filter } from "../../filter";
 
 //API Endpoints
 import { getSchedules, registerSchedule } from "../../../pages/api/schedule-api";
 
 //Constants Values
-import { dataProps, optionsType } from "../../../constants/types";
+import { ValueType, dataProps, optionsType } from "../../../constants/types";
 import { DateFormatter, icons, options } from "../../../constants/objects";
 
 //Custom Styles
-import { Container, ContentContainer, FormContainer, MyScheduleContainer, NewScheduleContainer, NotFoundSchedulesContainer, ScheduleCards, WarningContainer } from "./styles";
+import { Container, ContentContainer, FormContainer, MyScheduleContainer, NewScheduleContainer, NotFoundSchedulesContainer, ScheduleCards, SchedulesContainer, WarningContainer } from "./styles";
 import { StyledSelect } from "../../../styles/global";
 
 export function ScheduleBoard() {
-    const { data: session } = useSession()
+    const { data: session } = useSession();
     const animatedComponents = makeAnimated();
 
     const [name, setName] = useState<string>(session?.user?.name ?? '');
-    const [date, setDate] = useState<string>()
+    const [date, setDate] = useState<string>();
     const [selectedOptions, setSelectedOptions] = useState<optionsType[]>([]);
 
     const [schedules, setSchedules] = useState([]);
 
-    const [sameWeekModalIsOpen, setSameWeekModalIsOpen] = useState<boolean>(false)
+    const [sameWeekModalIsOpen, setSameWeekModalIsOpen] = useState<boolean>(false);
     const [datesInTheSameWeek, setDatesInTheSameWeek] = useState<dataProps[]>([]);
 
-    const [editScheduleModalIsOpen, setEditScheduleModalIsOpen] = useState<boolean>(false)
+    const [editScheduleModalIsOpen, setEditScheduleModalIsOpen] = useState<boolean>(false);
+    const [viewDetailsModalIsOpen, setViewDetailsModalIsOpen] = useState<boolean>(false);
 
-    const [dataToEdit, setDataToEdit] = useState<dataProps>()
+    const [showOldestData, setShowOldestData] = useState<boolean>(false);
+    const [rangeDate, setRangeDate] = useState<ValueType>();
+
+    const [dataToEdit, setDataToEdit] = useState<dataProps>();
+    const [dataToView, setDataToView] = useState<dataProps>();
 
     const orderedData =
         Array.isArray(schedules) && schedules.length > 0 &&
@@ -50,17 +57,22 @@ export function ScheduleBoard() {
     let hasWithinLastTwoDays = isWithinLastTwoDays(orderedData);
 
     async function fetchSchedules() {
-        await getSchedules(session?.user?.email)
+        await getSchedules(showOldestData, rangeDate, session?.user?.email)
             .then(response => {
                 setSchedules(response)
             })
     }
 
     useEffect(() => {
-        setName(session?.user?.name)
+        !name && setName(session?.user?.name)
+
 
         fetchSchedules()
     }, [session])
+
+    useEffect(() => {
+        fetchSchedules()
+    }, [showOldestData, rangeDate])
 
     useEffect(() => {
         hasWithinLastTwoDays = isWithinLastTwoDays(orderedData)
@@ -74,10 +86,23 @@ export function ScheduleBoard() {
         setEditScheduleModalIsOpen(!editScheduleModalIsOpen)
     }
 
+    function toggleViewDetailsModal() {
+        setViewDetailsModalIsOpen(!viewDetailsModalIsOpen)
+    }
+
+
     function scheduleToEdit(data) {
         toggleEditScheduleModal()
 
         setDataToEdit(data)
+    }
+
+    function scheduleToView(data) {
+        toggleViewDetailsModal()
+
+        console.log('Chegou aqui')
+
+        setDataToView(data)
     }
 
     async function verifyDate() {
@@ -94,7 +119,7 @@ export function ScheduleBoard() {
 
     function isWithinLastTwoDays(input: any) {
         if (Array.isArray(input)) {
-            return input.some(item => isWithinLastTwoDays(item.date));
+            return input.some(item => isPastDate(item.date));
         } else if (typeof input === 'string') {
             const inputDate = new Date(input);
             const today = new Date();
@@ -104,6 +129,13 @@ export function ScheduleBoard() {
         } else {
             return false;
         }
+    }
+
+    function isPastDate(input: any) {
+        const currentDate = new Date()
+        const scheduleDate = new Date(input)
+
+        return  scheduleDate.getTime() < currentDate.getTime()
     }
 
     const data = {
@@ -116,12 +148,13 @@ export function ScheduleBoard() {
     async function handleSubmit(event) {
         event.preventDefault()
 
-        const inputDate = new Date(date);
-        const now = new Date();
+        const [year, month, day] = date.split('-');
+        const inputDate = new Date(Number(year), Number(month) - 1, Number(day)).getDate();
+        const now = new Date().getDate();
 
         const isInTheSameWeek = await verifyDate()
 
-        if (!date || inputDate <= now) {
+        if (!date || inputDate < now) {
             return toast.warning('A data não pode ser retroativa ou nula!', {
                 position: "top-right",
                 autoClose: 5000,
@@ -160,90 +193,108 @@ export function ScheduleBoard() {
     return (
         <Container>
             <ContentContainer>
-                <NewScheduleContainer>
-                    <h3>Agendar Serviço</h3>
-                    <FormContainer>
-                        <form onSubmit={(event) => handleSubmit(event)}>
-                            <label>Nome</label>
-                            <input
-                                name="name"
-                                type="text"
-                                value={name}
-                                onChange={(event) => setName(event.target.value)}
-                            />
-                            <label>Data</label>
-                            <input
-                                name="date"
-                                type="date"
-                                value={date}
-                                onChange={(event) => setDate(event.target.value)}
-                            />
-                            <label>Serviços</label>
-                            <StyledSelect
-                                name="services"
-                                components={animatedComponents}
-                                placeholder="Selecione o serviço"
-                                isMulti
-                                options={options}
-                                onChange={(item: any) => setSelectedOptions(item)}
-                                className="select"
-                                isClearable={true}
-                                isSearchable={true}
-                                isDisabled={false}
-                                isLoading={false}
-                                isRtl={false}
-                                closeMenuOnSelect={false}
-                            />
+                <Filter
+                    rangeDate={rangeDate}
+                    setRangeDate={setRangeDate}
+                    showOldestData={showOldestData}
+                    setShowOldestData={setShowOldestData}
+                />
 
-                            <button type="submit">
-                                Agendar
-                            </button>
-                        </form>
-                    </FormContainer>
-                </NewScheduleContainer>
-                <MyScheduleContainer>
-                    <h3>Meus Agendamentos</h3>
+                <SchedulesContainer>
+                    <NewScheduleContainer>
+                        <h3>Agendar Serviço</h3>
+                        <FormContainer>
+                            <form onSubmit={(event) => handleSubmit(event)}>
+                                <label>Nome</label>
+                                <input
+                                    name="name"
+                                    type="text"
+                                    value={name}
+                                    onChange={(event) => setName(event.target.value)}
+                                />
+                                <label>Data</label>
+                                <input
+                                    name="date"
+                                    type="date"
+                                    value={date}
+                                    onChange={(event) => setDate(event.target.value)}
+                                />
+                                <label>Serviços</label>
+                                <StyledSelect
+                                    name="services"
+                                    components={animatedComponents}
+                                    placeholder="Selecione o serviço"
+                                    isMulti
+                                    options={options}
+                                    onChange={(item: any) => setSelectedOptions(item)}
+                                    className="select"
+                                    isClearable={true}
+                                    isSearchable={true}
+                                    isDisabled={false}
+                                    isLoading={false}
+                                    isRtl={false}
+                                    closeMenuOnSelect={false}
+                                />
+
+                                <button type="submit">
+                                    Agendar
+                                </button>
+                            </form>
+                        </FormContainer>
+                    </NewScheduleContainer>
+                    <MyScheduleContainer>
+                        <h3>Meus Agendamentos</h3>
 
 
-                    {hasWithinLastTwoDays
-                        ?
-                        <WarningContainer>
-                            <CiWarning />
-                            <span>
-                                Alterações de agendamento podem ser realizadas com no máximo 2 dias de antecedência. Apos isso apenas por telefone.
-                            </span>
-                        </WarningContainer>
-                        : <></>
-                    }
-
-                    <div>
-                        {Array.isArray(orderedData) && orderedData.length > 0
-                            ? (orderedData.map(schedule => {
-                                const formattedDate = DateFormatter(schedule.date)
-
-                                const isDisabled = isWithinLastTwoDays(schedule.date)
-
-                                return (
-                                    <ScheduleCards
-                                        key={schedule.id}
-                                        onClick={() => scheduleToEdit(schedule)}
-                                        disabled={isDisabled}
-                                    >
-                                        <span>
-                                            {icons[schedule.status.value]}
-                                            {formattedDate}
-                                        </span>
-                                    </ScheduleCards>
-                                )
-                            }))
-                            :
-                            <NotFoundSchedulesContainer>
-                                <CiCircleInfo />
-                                <span>Você nao possui nenhum agendamento!</span>
-                            </NotFoundSchedulesContainer>
+                        {hasWithinLastTwoDays
+                            ?
+                            <WarningContainer>
+                                <CiWarning />
+                                <span>
+                                    Alterações de agendamento podem ser realizadas com no máximo 2 dias de antecedência. Apos isso apenas por telefone.
+                                </span>
+                            </WarningContainer>
+                            : <></>
                         }
-                    </div>
-                </MyScheduleContainer>
+
+                        <div>
+                            {Array.isArray(orderedData) && orderedData.length > 0
+                                ? (orderedData.map(schedule => {
+                                    const formattedDate = DateFormatter(schedule.date)
+
+                                    const isDisabled = isWithinLastTwoDays(schedule.date)
+                                    const canViewDetails = isPastDate(schedule.date)
+
+                                    return (
+                                        <ScheduleCards
+                                            key={schedule.id}
+                                            onClick={() => isDisabled ? {} : scheduleToEdit(schedule)}
+                                            isDisabled={isDisabled}
+                                        >
+                                            <span>
+                                                {icons[schedule.status.value]}
+                                                {formattedDate}
+                                            </span>
+                                            {canViewDetails 
+                                            ? (<button
+                                                    disabled={!isDisabled}
+                                                    onClick={() => scheduleToView(schedule)}
+                                                >
+                                                    <CiRead /> Ver Detalhes
+                                                </button>) 
+                                            : (<></>)}
+                                        </ScheduleCards>
+                                    )
+                                }))
+                                :
+                                <NotFoundSchedulesContainer>
+                                    <CiCircleInfo />
+                                    <span>Você nao possui nenhum agendamento!</span>
+                                </NotFoundSchedulesContainer>
+                            }
+                        </div>
+                    </MyScheduleContainer>
+                </SchedulesContainer>
             </ContentContainer>
 
             <ModalSameWeek
@@ -259,6 +310,12 @@ export function ScheduleBoard() {
                 toggleModal={toggleEditScheduleModal}
                 data={dataToEdit}
                 refetchSchedules={fetchSchedules}
+            />
+
+            <ModalViewDetails 
+                isOpen={viewDetailsModalIsOpen}
+                toggleModal={toggleViewDetailsModal}
+                data={dataToView}
             />
         </Container>
     )

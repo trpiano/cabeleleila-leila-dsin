@@ -1,29 +1,17 @@
 import axios from "axios";
 
-import { Cache } from 'cache-manager';
-
-let scheduleCache: Cache;
-
-import { dataProps } from "../../constants/types";
+import { ValueType, dataProps } from "../../constants/types";
 import { toast } from "react-toastify";
 import { DateFormatter as DateFormatter } from "../../constants/objects";
-import { useSession } from "next-auth/react";
 
 export async function getAdminAccounts(data: string): Promise<string> {
     try {
-        // const cachedSchedules = await scheduleCache.get<string>(email);
-
-        // if (cachedSchedules) {
-        //     return cachedSchedules;
-        // }
-
         const response = await axios.get(`${process.env.NEXT_PUBLIC_SCHEDULE_API}/admin`, {
             params: {
                 email: data,
             }
         });
 
-        // await scheduleCache.set(data, response.data, 60); // Armazenar em cache por 60 segundos
         return response.data;
     } catch (error) {
         console.error(error);
@@ -31,21 +19,22 @@ export async function getAdminAccounts(data: string): Promise<string> {
     }
 }
 
-export async function getSchedules(email?: string): Promise<dataProps[]> {
+export async function getSchedules(showOldestData?: boolean, rangeDate?: ValueType, email?: string, ): Promise<dataProps[]> {
     try {
-        // const cachedSchedules = await scheduleCache.get<dataProps[]>(props.email);
-
-        // if (cachedSchedules || !props.forceRefetch) {
-        //     return cachedSchedules;
-        // }
+        const formattedDates = rangeDate && rangeDate.map(date => {
+            const d = new Date(date);
+            return d.toISOString().substring(0, 10)
+        });
 
         const response = await axios.get(`${process.env.NEXT_PUBLIC_SCHEDULE_API}/schedules`, {
             params: {
-                email: email,
-            }
+                email,
+                showOldestData,
+                startFilterDate: formattedDates && formattedDates[0],
+                endFilterDate: formattedDates && formattedDates[1]
+            },
         });
 
-        // await scheduleCache.set(props.email, response.data, 60); // Armazenar em cache por 60 segundos
         return response.data;
     } catch (error) {
         if (error?.response?.status !== 404) {

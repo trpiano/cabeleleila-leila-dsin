@@ -26,8 +26,11 @@ export const ContentContainer = styled.div`
     width: 90%;
 
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+
+    gap: 2rem;
 
     table{
         width: 100%;
