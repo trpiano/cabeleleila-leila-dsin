@@ -22,21 +22,6 @@ export const Container = styled.section`
     }
 `
 
-export const HeaderContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-
-    h4{
-        font-size: 1.15rem;
-    }
-
-    svg{
-        cursor: pointer;
-    }
-`
-
 export const ContentContainer = styled.div`
     width: 100%;
 
@@ -94,5 +79,20 @@ export const ContentContainer = styled.div`
                 scale: 1.1;
             }
         }
+    }
+`
+
+export const HeaderContainer = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+
+    h4{
+        font-size: 1.15rem;
+    }
+
+    svg{
+        cursor: pointer;
     }
 `

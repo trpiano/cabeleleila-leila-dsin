@@ -1,57 +1,55 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession, signIn, signOut } from 'next-auth/react'
 
+//Libs
 import { FcGoogle } from "react-icons/fc";
 import { IoMdExit } from "react-icons/io";
 
-import { useSession, signIn, signOut } from 'next-auth/react'
+//API Endpoints
+import { getAdminAccounts } from '../../pages/api/schedule-api';
 
+//Custom Styles
 import { AuthContainer, HeaderContainer, Button } from "./styles";
-
 
 export function Header() {
     const router = useRouter()
 
     const { data: session, status } = useSession()
-    const isUser = !!session?.user
+    const isAuthenticated = !!session?.user
 
     useEffect(() => {
         if (status === "loading") return
-        if (!isUser) {
+
+        if (!isAuthenticated) {
             router.push('/')
         }
 
-        // ! TODO: Add role in the session data
+        getAdminAccounts(session?.user?.email)
+            .then(() => {
+                router.push('/admin')
+            })
+            .catch(() => {
+                router.push('/client')
+            })
 
-        // if(session?.user?.email){
-        //     session.user.roles = {  }
-        // }
-
-        isUser
-            ? session?.user?.email === "timoteopiano@gmail.com" ? router.push('/client') : router.push('/admin')
-            : router.push('/')
-
-    }, [isUser, status])
+    }, [isAuthenticated, status])
 
     return (
         <HeaderContainer>
             <h2>Cabeleleila<span>.</span>Leila</h2>
 
             <AuthContainer>
-                {isUser ? (
-                    <>
+                {isAuthenticated ? (
                         <Button onClick={() => signOut()}>
                             <img src={session.user.image} alt="user image" />
                             {session.user.name} 
                             <IoMdExit />
                         </Button>
-                    </>
                 ) : (
-                    <>
                         <Button onClick={() => signIn('google')}>
                             <FcGoogle />  Entrar com Google
                         </Button>
-                    </>
                 )}
             </AuthContainer>
         </HeaderContainer>

@@ -1,10 +1,13 @@
-import { createGlobalStyle } from "styled-components";
+import Select from "react-select";
+
+import styled, { createGlobalStyle } from "styled-components";
 
 export const GlobalStyle = createGlobalStyle`
     :root {
         --background: #fdf0d5;
 
         --blue-300: #669bbc;
+        --blue-400: #028090;
         --blue-600: #003049;
 
         --white: #fff;
@@ -55,4 +58,8 @@ export const GlobalStyle = createGlobalStyle`
         opacity: 0.6;
         cursor: not-allowed;
     }
+`;
+
+export const StyledSelect = styled(Select)`
+  width: 100%;
 `;

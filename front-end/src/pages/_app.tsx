@@ -1,9 +1,13 @@
 import { SessionProvider } from "next-auth/react"
+
+//Libs
 import { ToastContainer } from "react-toastify";
 import { ModalProvider } from 'styled-react-modal'
 
+//Internal Components
 import { Header } from '../components/header'
 
+//Custom Styles
 import { GlobalStyle } from "../styles/global";
 import 'react-toastify/dist/ReactToastify.css';
 

@@ -1,102 +1,70 @@
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
-import axios from "axios";
 
-
-import { v4 as uuidv4 } from 'uuid';
+// Libs
 import { toast } from "react-toastify";
-import Select from "react-select";
 import makeAnimated from "react-select/animated";
-import { endOfWeek, getWeek, startOfWeek } from 'date-fns';
+import { addDays, endOfWeek, getWeek, isBefore, parse, startOfWeek } from 'date-fns';
+import { CiWarning, CiCircleInfo } from "react-icons/ci";
 
-import { FaRegCalendarCheck, FaRegCalendarTimes, FaRegCalendarMinus } from "react-icons/fa";
-import { CiWarning } from "react-icons/ci";
-
+//Internal Modals
 import { ModalSameWeek } from "../modal/modalSameWeek";
 import { ModalEditSchedule } from "../modal/modalEditSchedule";
 
-import { Container, ContentContainer, MyScheduleContainer, NewScheduleContainer, ScheduleCards, WarningContainer } from "./styles";
+//API Endpoints
+import { getSchedules, registerSchedule } from "../../../pages/api/schedule-api";
 
-export type optionsType = {
-    value: string;
-    label: string;
-}
+//Constants Values
+import { dataProps, optionsType } from "../../../constants/types";
+import { DateFormatter, icons, options } from "../../../constants/objects";
 
-export type dataProps = {
-    id?: string;
-    name: string;
-    date: string;
-    email: string
-    selectedOptions: optionsType[];
-}
-
-export const options: optionsType[] = [
-    { value: "hairCut", label: "Corte de Cabelo" },
-    { value: "hairTreatment", label: "Tratamento de Cabelo" },
-    { value: "hairStraightening", label: "Alisamento de Cabelo" },
-];
+//Custom Styles
+import { Container, ContentContainer, FormContainer, MyScheduleContainer, NewScheduleContainer, NotFoundSchedulesContainer, ScheduleCards, WarningContainer } from "./styles";
+import { StyledSelect } from "../../../styles/global";
 
 export function ScheduleBoard() {
     const { data: session } = useSession()
     const animatedComponents = makeAnimated();
 
     const [name, setName] = useState<string>(session?.user?.name ?? '');
-    const [date, setDate] = useState<string>('')
+    const [date, setDate] = useState<string>()
     const [selectedOptions, setSelectedOptions] = useState<optionsType[]>([]);
 
+    const [schedules, setSchedules] = useState([]);
+
     const [sameWeekModalIsOpen, setSameWeekModalIsOpen] = useState<boolean>(false)
+    const [datesInTheSameWeek, setDatesInTheSameWeek] = useState<dataProps[]>([]);
+
     const [editScheduleModalIsOpen, setEditScheduleModalIsOpen] = useState<boolean>(false)
 
     const [dataToEdit, setDataToEdit] = useState<dataProps>()
 
-    const [scheduleForTheSameDay, setScheduleForTheSameDay] = useState<boolean>()
+    const orderedData =
+        Array.isArray(schedules) && schedules.length > 0 &&
+        schedules.sort((a, b) => {
+            const dateA = parse(a.date, 'yyyy-MM-dd', new Date()).valueOf();
+            const dateB = parse(b.date, 'yyyy-MM-dd', new Date()).valueOf();
+            return dateA - dateB;
+        });
+
+    let hasWithinLastTwoDays = isWithinLastTwoDays(orderedData);
+
+    async function fetchSchedules() {
+        await getSchedules(session?.user?.email)
+            .then(response => {
+                setSchedules(response)
+            })
+    }
 
     useEffect(() => {
         setName(session?.user?.name)
+
+        fetchSchedules()
     }, [session])
 
-    const dateOptions = [
-        {
-            id: uuidv4(),
-            name: 'Batata',
-            date: '2024-04-22',
-            email: 'timoteopiano@gmail.com',
-            selectedOptions: [
-                { value: "hairCut", label: "Corte de Cabelo" },
-                { value: "hairTreatment", label: "Tratamento de Cabelo" }
-            ],
-            status: 'REFUSED'
-        },
-        {
-            id: uuidv4(),
-            name: 'Batata 2',
-            date: '2024-11-30',
-            email: 'timoteopiano@gmail.com',
-            selectedOptions: [
-                { value: "hairCut", label: "Corte de Cabelo" },
-                { value: "hairTreatment", label: "Tratamento de Cabelo" }
-            ],
-            status: 'RECEIVED'
-        },
-        {
-            id: uuidv4(),
-            name: 'Batata 2',
-            date: '2024-11-30',
-            email: 'timoteopiano@gmail.com',
-            selectedOptions: [
-                { value: "hairCut", label: "Corte de Cabelo" },
-                { value: "hairTreatment", label: "Tratamento de Cabelo" }
-            ],
-            status: 'CONFIRMED'
-        }
-    ];
-
-    const icons = {
-        RECEIVED: <FaRegCalendarMinus />,
-        CHANGED: <FaRegCalendarMinus />,
-        CONFIRMED: <FaRegCalendarCheck />,
-        REFUSED: <FaRegCalendarTimes />,
-    };
+    useEffect(() => {
+        hasWithinLastTwoDays = isWithinLastTwoDays(orderedData)
+    }, [schedules])
 
     function toggleSameWeekModal() {
         setSameWeekModalIsOpen(!sameWeekModalIsOpen)
@@ -112,42 +80,38 @@ export function ScheduleBoard() {
         setDataToEdit(data)
     }
 
-    async function registerSchedule(data: dataProps) {
-        await axios.post(`${process.env.NEXT_PUBLIC_SCHEDULE_API}/schedule`, {
-            id: uuidv4(),
-            status: 'RECEIVED',
-            ...data
-        })
+    async function verifyDate() {
+        const dateToCheck = new Date(date);
+        const weekStart = new Date(dateToCheck.getFullYear(), dateToCheck.getMonth(), dateToCheck.getDate() - dateToCheck.getDay());
+        const weekEnd = new Date(weekStart.getTime() + 6 * 24 * 60 * 60 * 1000);
+
+        return Array.isArray(schedules) && schedules.length > 0 && schedules.filter((schedule) => {
+            const scheduleDate = new Date(schedule.date)
+
+            return scheduleDate >= weekStart && scheduleDate <= weekEnd;
+        });
     }
 
-    async function verifyDate(){
-        const dateToCheck = new Date(date)
-        const currentDate = new Date();
-        const startOfWeekToCheck = startOfWeek(dateToCheck, { weekStartsOn: 0 });
-        const endOfWeekToCheck = endOfWeek(dateToCheck, { weekStartsOn: 0 });
-    
-        const hasSchedule = dateOptions.filter(obj => {
-            const objWeek = getWeek(obj.date, { weekStartsOn: 0 });
-            const objStartOfWeek = startOfWeek(obj.date, { weekStartsOn: 0 });
-            const objEndOfWeek = endOfWeek(obj.date, { weekStartsOn: 0 });
-    
-            return  objWeek === getWeek(dateToCheck, { weekStartsOn: 0 }) &&
-                    objStartOfWeek >= startOfWeekToCheck &&
-                    objEndOfWeek <= endOfWeekToCheck &&
-                    new Date(obj.date) >= currentDate;
-        }).length > 0
+    function isWithinLastTwoDays(input: any) {
+        if (Array.isArray(input)) {
+            return input.some(item => isWithinLastTwoDays(item.date));
+        } else if (typeof input === 'string') {
+            const inputDate = new Date(input);
+            const today = new Date();
+            const twoDaysFromNow = addDays(today, 2);
 
-        return hasSchedule
+            return isBefore(inputDate, twoDaysFromNow);
+        } else {
+            return false;
+        }
     }
 
-    function isWithinLastTwoDays(dateString: string) {
-        const inputDate = new Date(dateString);
-        const now = new Date();
-        const twoDaysAgo = new Date();
-        twoDaysAgo.setDate(now.getDate() - 2);
-      
-        return inputDate >= twoDaysAgo && inputDate <= now;
-      }
+    const data = {
+        name,
+        email: session?.user?.email,
+        date,
+        selectedOptions,
+    }
 
     async function handleSubmit(event) {
         event.preventDefault()
@@ -155,57 +119,40 @@ export function ScheduleBoard() {
         const inputDate = new Date(date);
         const now = new Date();
 
-        const data = {
-            name,
-            email: session.user.email,
-            date,
-            selectedOptions,
-        }
-
         const isInTheSameWeek = await verifyDate()
-        const isInTwoDaysAgo = isWithinLastTwoDays(date)
 
-        if(!date || inputDate <= now){
-            return toast.warning('A data nao pode ser retroativa ou nula!', {
+        if (!date || inputDate <= now) {
+            return toast.warning('A data não pode ser retroativa ou nula!', {
                 position: "top-right",
                 autoClose: 5000,
                 hideProgressBar: false,
                 closeOnClick: true,
-                pauseOnHover: true,
                 draggable: true,
                 progress: undefined,
                 theme: "light",
             });
         }
 
+        if (selectedOptions.length < 1) {
+            return toast.warning('O serviço não pode vazio!', {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                draggable: true,
+                progress: undefined,
+                theme: "light",
+            });
+        }
 
-        if(isInTheSameWeek){
-            toggleSameWeekModal() 
+        if (isInTheSameWeek.length >= 1) {
+            setDatesInTheSameWeek(isInTheSameWeek)
+
+            toggleSameWeekModal()
         } else {
             registerSchedule(data)
                 .then(() => {
-                    toast.success('Agendamento realizado com sucesso!', {
-                        position: "top-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: "light",
-                    });
-                })
-                .catch(() => {
-                    toast.error('Ocorreu um erro ao realizar o agendamento, tente novamente!', {
-                        position: "top-right",
-                        autoClose: 5000,
-                        hideProgressBar: false,
-                        closeOnClick: true,
-                        pauseOnHover: true,
-                        draggable: true,
-                        progress: undefined,
-                        theme: "light",
-                    });
+                    fetchSchedules()
                 })
         }
     }
@@ -215,7 +162,7 @@ export function ScheduleBoard() {
             <ContentContainer>
                 <NewScheduleContainer>
                     <h3>Agendar Serviço</h3>
-                    <div>
+                    <FormContainer>
                         <form onSubmit={(event) => handleSubmit(event)}>
                             <label>Nome</label>
                             <input
@@ -232,7 +179,7 @@ export function ScheduleBoard() {
                                 onChange={(event) => setDate(event.target.value)}
                             />
                             <label>Serviços</label>
-                            <Select
+                            <StyledSelect
                                 name="services"
                                 components={animatedComponents}
                                 placeholder="Selecione o serviço"
@@ -252,57 +199,67 @@ export function ScheduleBoard() {
                                 Agendar
                             </button>
                         </form>
-                    </div>
+                    </FormContainer>
                 </NewScheduleContainer>
                 <MyScheduleContainer>
                     <h3>Meus Agendamentos</h3>
 
-                    <WarningContainer>
-                        <CiWarning /> 
-                        <label>
-                            Alterações de agendamento podem ser realizadas com no máximo 2 dias de antecedência.
-                        </label>
-                    </WarningContainer>
+
+                    {hasWithinLastTwoDays
+                        ?
+                        <WarningContainer>
+                            <CiWarning />
+                            <span>
+                                Alterações de agendamento podem ser realizadas com no máximo 2 dias de antecedência. Apos isso apenas por telefone.
+                            </span>
+                        </WarningContainer>
+                        : <></>
+                    }
 
                     <div>
-                        {dateOptions.map(schedule => {
-                            const date = new Date(schedule.date);
-                            const options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: '2-digit' };
-                            const formatter = new Intl.DateTimeFormat('pt-BR', options);
-                            const formattedDate = formatter.format(date);
+                        {Array.isArray(orderedData) && orderedData.length > 0
+                            ? (orderedData.map(schedule => {
+                                const formattedDate = DateFormatter(schedule.date)
 
-                            const isDisabled = isWithinLastTwoDays(schedule.date)
+                                const isDisabled = isWithinLastTwoDays(schedule.date)
 
-                            return (
-                                <ScheduleCards
-                                    key={schedule.id}
-                                    onClick={() => scheduleToEdit(schedule)}
-                                    disabled={isDisabled}
-                                >
-                                    <span>
-                                        {icons[schedule.status]}
-                                        {formattedDate}
-                                    </span>
-                                </ScheduleCards>
-                            )
-                        })}
+                                return (
+                                    <ScheduleCards
+                                        key={schedule.id}
+                                        onClick={() => scheduleToEdit(schedule)}
+                                        disabled={isDisabled}
+                                    >
+                                        <span>
+                                            {icons[schedule.status.value]}
+                                            {formattedDate}
+                                        </span>
+                                    </ScheduleCards>
+                                )
+                            }))
+                            :
+                            <NotFoundSchedulesContainer>
+                                <CiCircleInfo />
+                                <span>Você nao possui nenhum agendamento!</span>
+                            </NotFoundSchedulesContainer>
+                        }
                     </div>
                 </MyScheduleContainer>
-
-                <ModalSameWeek 
-                    isOpen={sameWeekModalIsOpen} 
-                    toggleModal={toggleSameWeekModal} 
-                    date={date} 
-                    isForSameDay={setScheduleForTheSameDay}
-                />
-
-                <ModalEditSchedule 
-                    isOpen={editScheduleModalIsOpen} 
-                    toggleModal={toggleEditScheduleModal} 
-                    dataToEdit={dataToEdit} 
-                    isForSameDay={setEditScheduleModalIsOpen}
-                />
             </ContentContainer>
+
+            <ModalSameWeek
+                isOpen={sameWeekModalIsOpen}
+                toggleModal={toggleSameWeekModal}
+                data={data}
+                datesInTheSameWeek={datesInTheSameWeek}
+                refetchSchedules={fetchSchedules}
+            />
+
+            <ModalEditSchedule
+                isOpen={editScheduleModalIsOpen}
+                toggleModal={toggleEditScheduleModal}
+                data={dataToEdit}
+                refetchSchedules={fetchSchedules}
+            />
         </Container>
     )
 }

@@ -1,7 +1,18 @@
-export default function Admin(){
-    return(
+import Head from 'next/head'
+
+//Internal Components
+import AdminScheduleBoard from "../components/admin/adminScheduleBoard";
+
+export default function Admin() {
+    return (
         <>
-            <h4>Hello World!</h4>
+            <Head>
+                <title>Cabeleleila Leila | Admin</title>
+            </Head>
+
+            <main>
+                <AdminScheduleBoard />
+            </main>
         </>
     )
 }

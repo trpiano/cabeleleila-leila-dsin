@@ -20,6 +20,8 @@ export const ContentContainer = styled.div`
     align-items: center;
     justify-content: center;
 
+    gap: 2rem;
+
     background: rgba(255, 255, 255, 0.2);
     border-radius: 1rem;
     box-shadow: 0 0.25rem 1,875rem rgba(0, 0, 0, 0.1);
@@ -30,6 +32,10 @@ export const ContentContainer = styled.div`
     h3{
         color: var(--white);
         font-size: 1.5rem;
+    }
+
+    @media screen and (max-width: 920px) {
+        flex-direction: column;
     }
 `
 
@@ -42,10 +48,12 @@ export const MyScheduleContainer = styled.div`
     align-items: center;
     justify-content: flex-start;
 
-    gap: 1rem;
+    padding: 1rem;
+
+    gap: 2rem;
 
     div{
-        padding: 1rem;
+        width: 100%;
 
         display: flex;
         flex-direction: column;
@@ -57,7 +65,7 @@ export const MyScheduleContainer = styled.div`
 `
 
 export const WarningContainer = styled.div`
-    max-width: 500px;
+    min-width: 500px;
 
     background: rgba(255,204,0, 0.8);
 
@@ -72,6 +80,34 @@ export const WarningContainer = styled.div`
     padding: 1rem;
 
     border-radius: 0.5rem;
+
+    @media screen and (max-width: 920px) {
+        min-width: 0px;
+        width: 100%;
+    }
+`
+
+export const NotFoundSchedulesContainer = styled.div`
+    min-width: 500px;
+
+    background: rgba(3, 111, 252, 0.2);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-align: center;
+
+    gap: 1rem;
+
+    padding: 1rem;
+
+    border-radius: 0.5rem;
+
+    @media screen and (max-width: 920px) {
+        min-width: 0px;
+        width: 100%;
+    }
 `
 
 export const NewScheduleContainer = styled.div`
@@ -84,70 +120,67 @@ export const NewScheduleContainer = styled.div`
     justify-content: flex-start;
 
     padding: 1rem;
+`
 
-    div{
-        width: 100%;
+export const FormContainer = styled.div`
+    width: 100%;
 
-        form{
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            justify-content: center;
+    form{
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
 
-            label{
-                padding: 1rem 0 0 0;
+        label{
+            padding: 1rem 0 0 0;
 
-                color: var(--white);
-            }
+            color: var(--white);
+        }
 
-            input{
-                width: 100%;
-                margin: 0.25rem 0 0 0;
+        input{
+            width: 100%;
+            margin: 0.25rem 0 0 0;
 
-                padding: 0.5rem;
+            padding: 0.5rem;
 
-                color: #333333;
+            color: #333333;
                 
-                border: none;
-                border-radius: 0.25rem;
+            border: none;
+            border-radius: 0.25rem;
+        }
+            
+        button{
+            width: 100%;
+
+            margin-top: 1rem;
+
+            gap: 0.75rem;
+
+            background: var(--blue-600);
+            color: var(--white);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+
+            img{
+                width: 30px;
+
+                border-radius: 50%;
             }
-
-            .select{
-                width: 100%;
-            }
-
-            button{
-                width: 100%;
-
-                margin-top: 1rem;
-
-                gap: 0.75rem;
-
-                background: var(--blue-600);
-                color: var(--white);
-                border: none;
-                padding: 0.5rem 1rem;
-                border-radius: 0.5rem;
-
-                img{
-                    width: 30px;
-
-                    border-radius: 50%;
-                }
                 
-                :hover{
-                    transition: 0.4s;
+            :hover{
+                transition: 0.4s;
 
-                    opacity: 0.8;
-                    scale: 1.1;
-                }
+                opacity: 0.8;
+                scale: 1.1;
             }
         }
     }
 `
 
 export const ScheduleCards = styled.button`
-    width: 500px;
+    width: 100%;
+    min-width: 500px;
 
     display: flex;
     flex-direction: row;
@@ -169,5 +202,9 @@ export const ScheduleCards = styled.button`
         justify-content: center;
 
         gap: 0.5rem;
+    }
+
+    @media screen and (max-width: 920px) {
+        min-width: 0px;
     }
 `
