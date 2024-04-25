@@ -26,14 +26,15 @@ export function Header() {
         }
 
         getAdminAccounts(session?.user?.email)
-            .then(() => {
-                router.push('/admin')
-            })
-            .catch(() => {
-                router.push('/client')
+            .then((response) => {
+                if(response === true){
+                    router.push('/admin')
+                }else{
+                    router.push('/client')
+                } 
             })
 
-    }, [isAuthenticated, status])
+    }, [isAuthenticated, status, session])
 
     return (
         <HeaderContainer>

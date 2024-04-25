@@ -4,7 +4,7 @@ import { ValueType, dataProps } from "../../constants/types";
 import { toast } from "react-toastify";
 import { DateFormatter as DateFormatter } from "../../constants/objects";
 
-export async function getAdminAccounts(data: string): Promise<string> {
+export async function getAdminAccounts(data: string): Promise<boolean> {
     try {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_SCHEDULE_API}/admin`, {
             params: {
@@ -12,10 +12,14 @@ export async function getAdminAccounts(data: string): Promise<string> {
             }
         });
 
-        return response.data;
+        if(response.status !== 200 || response.data.length === 0) {
+            return false
+        }
+
+        return true;
     } catch (error) {
         console.error(error);
-        throw error;
+        return false;
     }
 }
 
@@ -49,7 +53,8 @@ export async function getSchedules(showOldestData?: boolean, rangeDate?: ValueTy
             });
 
             console.error(error);
-            throw error;
+
+            return error?.data?.massage;
         }
     }
 }
@@ -75,7 +80,8 @@ export async function editSchedule(scheduleData: dataProps, isAdmin: any): Promi
         }
     } catch (error) {
         console.error(error);
-        throw error;
+       
+        return error?.data?.massage;
     }
 }
 
@@ -111,6 +117,6 @@ export async function registerSchedule(data: dataProps) {
             theme: "light",
         });
 
-        throw error;
+        return error?.data?.massage;
     }
 }

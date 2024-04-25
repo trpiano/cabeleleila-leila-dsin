@@ -66,7 +66,6 @@ export function ScheduleBoard() {
     useEffect(() => {
         !name && setName(session?.user?.name)
 
-
         fetchSchedules()
     }, [session])
 
@@ -99,8 +98,6 @@ export function ScheduleBoard() {
 
     function scheduleToView(data) {
         toggleViewDetailsModal()
-
-        console.log('Chegou aqui')
 
         setDataToView(data)
     }

@@ -64,7 +64,7 @@ app.get('/schedules', async (req, res) => {
 
     filteredSchedules = [...filteredSchedulesByOldestData];
 
-    if (filteredSchedules.length > 0) {
+    if (filteredSchedules && filteredSchedules.length > 0) {
         res.status(200).json(filteredSchedules);
     } else {
         res.status(404).json({ message: 'No schedules found!' });
@@ -79,7 +79,7 @@ app.post('/schedules', async (req, res) => {
 
     const missingFields = requiredFields.filter(field => !scheduleField.hasOwnProperty(field));
 
-    if (missingFields.length > 0) {
+    if (missingFields && missingFields.length > 0) {
         return res.status(202).json({ message: `Missing required fields: ${missingFields.join(', ')}!` });
     }
 
@@ -116,10 +116,10 @@ app.get('/admin', async (req, res) => {
 
     const filteredObject = email && adminsData.admins.filter(object => object.email === email);
 
-    if(filteredObject){
+    if(filteredObject && filteredObject.length !== 0){
         res.status(200).json(filteredObject);
     }else {
-        res.status(202).json({ message: 'Admin access not found!' })
+        res.status(404).json({ message: 'Admin access not found!' })
     }
 })
 

@@ -1,4 +1,24 @@
 {
   "schedules": [
+    {
+      "status": {
+        "value": "RECEIVED",
+        "label": "Recebido"
+      },
+      "name": "Timóteo Piano",
+      "email": "timoteopiano@gmail.com",
+      "date": "2024-04-23",
+      "selectedOptions": [
+        {
+          "value": "hairStraightening",
+          "label": "Alisamento de Cabelo"
+        },
+        {
+          "value": "hairTreatment",
+          "label": "Tratamento de Cabelo"
+        }
+      ],
+      "id": "6a99db53-dc91-4b79-8cbc-707987c0c14f"
+    }
   ]
 }
