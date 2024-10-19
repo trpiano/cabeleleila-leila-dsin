@@ -1,12 +1,77 @@
-<h1 align="center">
-   Desafio Cabeleleila Leila - DSION
+<h1 align="center" id="top">
+   Desafio Cabeleleila Leila - DSIN
 
-<br>
-<h3 align="center">
+<br/>
+<br/>
 
-<br>
-</h3>
-</h1>
+<p align="center">
+  <a href="https://www.linkedin.com/in/timoteopiano/">
+    <img alt="Made by" src="https://img.shields.io/badge/made%20by-Timoteo%20Piano-%BD93EC">
+  </a>
+  <img alt="Repository size" src="https://img.shields.io/github/repo-size/trpiano/cabeleleila-leila-dsin?color=%BD93EC">
+  <a href="https://github.com/trpiano/cabeleleila-leila-dsin/commits/master">
+    <img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/trpiano/cabeleleila-leila-dsin?color=%BD93EC">
+  </a>
+  <img alt="GitHub" src="https://img.shields.io/github/license/trpiano/cabeleleila-leila-dsin?color=%BD93EC">
+</p>
+
+## Screenshots
+
+<div align="center"> 
+  <img src="/.github/admin_atualizando_status.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/admin_dashboard_datas_retroativas.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/admin_dashboard.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/admin_editando_agendamento.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/detalhes_de_agendamento_passado.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/novo_usuario_sem_agendamentos.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/sugestao_agendamento_mesma_semana.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/usuario_editando_agendamento.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+<div align="center"> 
+  <img src="/.github/usuario_nao_autenticado.png" alt="cabeleleila-leila-dsin" />
+</div>
+<br/>
+<br/>
+
+## Instruções
 
 **Instruções para executar o front-end:**
 
@@ -87,3 +152,11 @@ Insira o objeto abaixo dentro do array no arquivo "admin.json" para que o mesmo 
 - [X] Styled-Components
 - [X] NodeJS
 - [X] Express
+
+<br/>
+
+Made with 💜 by <a href="https://github.com/trpiano" target="_blank">`Timoteo Reinheimer Piano</a>`
+
+&#xa0;
+
+<a href="#top">`Back to top`</a>
