@@ -155,8 +155,8 @@ Insira o objeto abaixo dentro do array no arquivo "admin.json" para que o mesmo 
 
 <br/>
 
-Made with 💜 by <a href="https://github.com/trpiano" target="_blank">`Timoteo Reinheimer Piano</a>`
+Made with 💜 by <a href="https://github.com/trpiano" target="_blank">Timoteo Reinheimer Piano</a>
 
 &#xa0;
 
-<a href="#top">`Back to top`</a>
+<a href="#top">Back to top</a>
